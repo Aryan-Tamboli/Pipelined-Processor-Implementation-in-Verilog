@@ -88,7 +88,7 @@ module cpu_top_level(clk,rst,r0,r1,r2,r3,r4,r5,r6,r7);
 
     EX_stage EX_stage(.clk(clk),.IR_in(IR_EX),.D1_in(D1_EX),.D2_in(D2_EX),
                       .alu_ctrl_in(alu_ctrl_EX),
-                      .carryin(),.alu_out(alu_out_EX),.carryout(carry_EX),.zeroout(zero_EX));
+                      .carryin(carry_MEM),.alu_out(alu_out_EX),.carryout(carry_EX),.zeroout(zero_EX));
 
     EX_MEM EX_MEM(.clk(clk), .rst(rst), .pc_in(pc_EX), .pc2_in(pc2_EX), .IR_in(IR_EX),
                          .pc_out(pc_MEM),.pc2_out(pc2_MEM),
@@ -138,6 +138,15 @@ module cpu_top_level(clk,rst,r0,r1,r2,r3,r4,r5,r6,r7);
                       .carry_flag_status(carry_flag_status),
                       .zero_flag_status(zero_flag_status));    
 
+    flag_register flag_reg(
+                             .clk(clk),.rst(rst),
+                             .carry_in(carryout_WB),
+                             .zero_in(zeroout_WB),
+                             .carry_wr(carry_wr),
+                             .zero_wr(zero_wr),
+                             .carry_flag_status(carry_flag_status),
+                             .zero_flag_status(zero_flag_status));
+
     branch_handler branch_handler(.IR_in_from_EX_stage(IR_EX),
                                   .pc_update_mux_signal(pc_mux_signal),
                                   .flush(flush));    
@@ -150,8 +159,8 @@ module cpu_top_level(clk,rst,r0,r1,r2,r3,r4,r5,r6,r7);
 									.pc2_EX(pc2_EX),
 									.pc2_MEM(pc2_MEM),
 									.pc2_WB(pc2_WB),
-                           .mem_read_val_MEM(mem_read_val_MEM),
-                           .mem_read_val_WB(mem_read_val_WB),
+                                    .mem_read_val_MEM(mem_read_val_MEM),
+                                    .mem_read_val_WB(mem_read_val_WB),
 									.D1_forward(D1_forward),
 									.D1_forward_en(D1_forward_en),
 									.D2_forward(D2_forward),
@@ -163,6 +172,8 @@ module cpu_top_level(clk,rst,r0,r1,r2,r3,r4,r5,r6,r7);
 	
 	 assign Imm_16_left_shifted = Imm_16<<1;
 
-    sign_extend nine_to_sixteen(.IR_in(IR_EX),.extended_out(Imm_16));                                                  
+    sign_extend nine_to_sixteen(.IR_in(IR_EX),.extended_out(Imm_16));  
+
+
 
 endmodule
